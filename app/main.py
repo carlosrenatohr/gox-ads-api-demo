@@ -26,7 +26,7 @@ app.include_router(ads.router)
 app.include_router(totals.router)
 
 # Error handling
-# app.add_exception_handler(GoogleAdsException, google_ads_exception_handler)
+app.add_exception_handler(GoogleAdsException, google_ads_exception_handler)
 
 if __name__ == "__main__":
     import uvicorn

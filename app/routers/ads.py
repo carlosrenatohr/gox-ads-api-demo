@@ -91,10 +91,19 @@ async def traffic_sources(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None
 ):
+    """
+    Data RAW of aggregated metrics at traffic source level.
+    Default: clicks, impressions, conversions, conversions_value, cost_micros.
+    """
     client = get_google_ads_client()
     customer_id = customer_id or get_default_customer_id()
     # date_clause = build_date_where(period, start_date, end_date)
 
+    # TODO: add date clause
+    # where_clause = ""
+    # if start_date and end_date:
+    #     where_clause = f" WHERE segments.date BETWEEN '{start_date}' AND '{end_date}' "
+    
     query = f"""
       SELECT
         segments.ad_network_type,
