@@ -89,6 +89,72 @@ async def list_accessible_customers():
             "details": str(e)
         })
 
+# List campaigns for a given customer ID
+# GET /campaigns/{customer_id}
+# Returns:
+# - status: success
+# - campaigns: list of campaigns
+# - message: instructions to pick one of the campaigns
+# ---
+# List campaigns for the default customer ID
+# GET /campaigns/
+# Returns:
+# - status: success
+# - campaigns: list of campaigns
+# - message: instructions to pick one of the campaigns
+# ---
+@app.get('/campaigns/')
+@app.get('/campaigns/{customer_id}')
+async def get_campaigns(customer_id: str = CUSTOMER_ID):
+    try:
+        # Load Google Ads client from google-ads.yaml
+        client = GoogleAdsClient.load_from_storage(path=str(CONFIG_PATH), version='v21')
+        
+        # Get Google Ads service
+        ga_service = client.get_service('GoogleAdsService')
+        
+        # Simple query: Fetch campaign ID and name
+        query = """
+            SELECT campaign.id, campaign.name
+            FROM campaign
+            ORDER BY campaign.id
+        """
+        
+        # Execute query in streaming mode
+        stream = ga_service.search_stream(customer_id=customer_id, query=query)
+        
+        # Define simple schema: List of dicts with id and name
+        campaigns = []
+        for batch in stream:
+            for row in batch.results:
+                campaign_data = {
+                    "id": row.campaign.id,
+                    "name": row.campaign.name
+                }
+                campaigns.append(campaign_data)
+        
+        # Return data as JSON
+        return {
+            "status": "success",
+            "campaigns": campaigns
+        }
+    
+    except GoogleAdsException as ex:
+        # Handle Google Ads API errors
+        errors = [{"message": error.message} for error in ex.failure.errors]
+        raise HTTPException(status_code=500, detail={
+            "status": "error",
+            "details": errors
+        })
+    
+    except Exception as e:
+        # Handle general errors
+        raise HTTPException(status_code=500, detail={
+            "status": "error",
+            "details": str(e)
+        })
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=4009, reload=True)
