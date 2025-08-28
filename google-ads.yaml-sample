@@ -2,7 +2,7 @@
 # --- Service account setup ---
 developer_token: 
 login_customer_id: 1234567890 # Go Test account 1
-json_key_file_path: /keys/abc-b69855777295.json
+json_key_file_path: keys/abc-b69855777295.json
 use_proto_plus: true
 impersonated_email: test@ads.iam.gserviceaccount.com
 # -- OAuth setup

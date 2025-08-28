@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.errors import GoogleAdsException
+from pathlib import Path
 
 load_dotenv()
 
@@ -13,9 +14,20 @@ app = FastAPI(
     version="1.0.0"
 )
 
-CUSTOMER_ID = '7228068139'  # GO test account 1
+# CUSTOMER_ID = '7228068139'  # GO test account 1
+CUSTOMER_ID = os.getenv('GOOGLE_ADS_LOGIN_CUSTOMER_ID')
+CONFIG_REL_PATH = os.getenv('GOOGLE_ADS_CONFIG_FILE_PATH')
 
-# Configurar CORS
+if not CUSTOMER_ID or not CONFIG_REL_PATH:
+    raise ValueError("There are missing environment variables: CUSTOMER_ID or CONFIG_REL_PATH")
+
+# Build absolute path from project root
+# BASE_DIR = Path(__file__).resolve().parent.parent
+# CONFIG_PATH = BASE_DIR / CONFIG_REL_PATH
+BASE_DIR = Path(__file__).resolve().parent.parent
+CONFIG_PATH = BASE_DIR / CONFIG_REL_PATH
+
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,8 +35,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Incluir rutas
 
 # Health check endpoint - best practices
 @app.get("/health", tags=["Health"])
@@ -38,17 +48,16 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "Google Ads API",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "message": "Service is running correctly"
     }
 
+# List accessible customers for the service account
 @app.get('/')
 async def list_accessible_customers():
     try:
         # Load Google Ads client from google-ads.yaml
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        config_path = os.path.join(current_dir, 'google-ads.yaml')
-        client = GoogleAdsClient.load_from_storage(path=config_path, version='v21')
+        client = GoogleAdsClient.load_from_storage(path=str(CONFIG_PATH), version='v21')
         
         # Get CustomerService
         customer_service = client.get_service('CustomerService')
@@ -58,12 +67,11 @@ async def list_accessible_customers():
         
         # Define simple schema: List of customer IDs
         customers = [{"customer_id": resource_name.split('/')[-1]} for resource_name in response.resource_names]
-        
-        # Return data as JSON
+
         return {
             "status": "success",
             "customers": customers,
-            "message": "Use one of these customer IDs in CUSTOMER_ID for the /campaigns endpoint"
+            "message": "Pick one of these customer IDs in CUSTOMER_ID for the /campaigns endpoint"
         }
     
     except GoogleAdsException as ex:
@@ -83,4 +91,4 @@ async def list_accessible_customers():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=4007, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=4009, reload=True)

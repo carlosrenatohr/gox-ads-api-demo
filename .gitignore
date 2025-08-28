@@ -1,6 +1,9 @@
 myenv/
+venv/
+.venv/
 __pycache__/
 *.pyc
 keys/
 client_secret.json
 google-ads.yaml
+.env
