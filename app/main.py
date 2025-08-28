@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from app.routers import health, ads, totals
+from app.routers import health, ads, totals, sales
 from app.core.errors import google_ads_exception_handler
 from google.ads.googleads.errors import GoogleAdsException
 
@@ -10,8 +10,8 @@ load_dotenv()
 
 # App config
 app = FastAPI(
-    title="GrowthOptix - Google Ads API",
-    description="Sample API to get data from Google Ads",
+    title="GrowthOptix - Google Ads Integration",
+    description="API to get data from Google Ads",
     version="1.0.0",
 )
 # CORS
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(ads.router)
 app.include_router(totals.router)
+app.include_router(sales.router)
 
 # Error handling
 app.add_exception_handler(GoogleAdsException, google_ads_exception_handler)
