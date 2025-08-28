@@ -7,5 +7,7 @@ def get_google_ads_client() -> GoogleAdsClient:
     client = GoogleAdsClient.load_from_storage(path=str(config_path), version="v21")
     return client
 
+# Get the default customer ID from the environment variables
 def get_default_customer_id() -> str:
-    return get_env("GOOGLE_ADS_LOGIN_CUSTOMER_ID")
+    # TODO: implement singleton pattern
+    return get_env("GOOGLE_ADS_LOGIN_CUSTOMER_ID") 

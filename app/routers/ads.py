@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.errors import GoogleAdsException
-from app.helpers.conversions import micros_to_amount, safe_div, run_gaql_stream
-from typing import Dict, Optional
+from app.helpers.conversions import micros_to_amount, safe_div, run_gaql_stream, normalize_fields, pick_fields
+from typing import Dict, Optional, List, Any
 
 from app.core.ads_client import get_google_ads_client, get_default_customer_id
 
@@ -105,7 +105,7 @@ async def traffic_sources(
       FROM customer
     """
 
-    # Sumamos por ad_network_type
+    # Sum by ad_network_type
     agg: Dict[str, Dict[str, float]] = {}
     try:
         for batch in run_gaql_stream(client, customer_id, query):
@@ -127,8 +127,8 @@ async def traffic_sources(
             items.append({
                 "source": k,  # Google Search, Search Partners, Display, YouTube, etc.
                 "clicks": int(v["clicks"]),
-                "leads": v["conversions"],              # puedes luego separar por tipo de conversión
-                "sales": None,                          # si aplicara
+                "leads": v["conversions"],
+                "sales": None,
                 "conv_rate_pct": round(conv_rate, 2),
                 "cac": round(cac, 2),
                 "spend": cost,

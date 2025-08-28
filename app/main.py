@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from app.routers import health, ads
+from app.routers import health, ads, totals
 from app.core.errors import google_ads_exception_handler
 from google.ads.googleads.errors import GoogleAdsException
 
@@ -23,6 +23,7 @@ app.add_middleware(
 # Routers
 app.include_router(health.router)
 app.include_router(ads.router)
+app.include_router(totals.router)
 
 # Error handling
 # app.add_exception_handler(GoogleAdsException, google_ads_exception_handler)
